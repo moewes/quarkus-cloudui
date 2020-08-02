@@ -11,10 +11,11 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
-import io.quarkus.undertow.deployment.ServletBuildItem;
 import java.util.Collection;
+import javax.enterprise.context.RequestScoped;
 import net.moewes.cloud.ui.annotations.CloudUiView;
 import net.moewes.cloud.ui.quarkus.runtime.CloudUiRecorder;
+import net.moewes.cloud.ui.quarkus.runtime.CloudUiRouter;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
@@ -24,34 +25,22 @@ public class CloudUiProcessor {
 
   private static final Logger log = Logger.getLogger(CloudUiProcessor.class);
   static private DotName ROUTE_ANNOTATION = DotName.createSimple(CloudUiView.class.getName());
+  static private DotName REQUEST_SCOPED = DotName.createSimple(RequestScoped.class.getName());
 
   @BuildStep
   FeatureBuildItem featureBuildItem() {
-    log.info("Add Feature"); // FIXME
     return new FeatureBuildItem("CloudUI");
   }
 
   @BuildStep
   BeanDefiningAnnotationBuildItem registerX() {
-    return new BeanDefiningAnnotationBuildItem(ROUTE_ANNOTATION);
+    return new BeanDefiningAnnotationBuildItem(ROUTE_ANNOTATION, REQUEST_SCOPED, false);
   }
-  /*
+
   @BuildStep
   AdditionalBeanBuildItem beans() {
-    return new AdditionalBeanBuildItem(RegisteredRoutesBean.class, QuarkusVaadinServlet.class);
+    return new AdditionalBeanBuildItem(CloudUiRouter.class);
   }
-  */
-
-  /*
-  @BuildStep
-  ServletBuildItem vaadinServlet() {
-    log.info("Add QuarkusVaadinServlet");
-    return ServletBuildItem.builder("QuarkusVaadinServlet", QuarkusVaadinServlet.class.getName())
-        .addMapping("/vaadin/*")
-        .addMapping("/frontend/*")
-        .build();
-  }
-   */
 
   @BuildStep
   @Record(STATIC_INIT)
@@ -59,72 +48,14 @@ public class CloudUiProcessor {
       BeanArchiveIndexBuildItem beanArchiveIndex,
       BeanContainerBuildItem beanContainer,
       BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
-          
-    log.info("Search for @Route annotated views");
-    IndexView indexView = beanArchiveIndex.getIndex();
-    Collection<AnnotationInstance> testBeans = indexView.getAnnotations(ROUTE_ANNOTATION);
-    for (AnnotationInstance ann : testBeans) {
-      log.info("Found " + ann.target().toString()); // FIXME
-      recorder.registerViews(beanContainer.getValue(), ann.target().toString());
 
-      /*
-      reflectiveClass.produce(new
-          ReflectiveClassBuildItem(false, false, ann.target().toString()));
-       */
+    IndexView indexView = beanArchiveIndex.getIndex();
+    Collection<AnnotationInstance> cloudUiViews = indexView.getAnnotations(ROUTE_ANNOTATION);
+    for (AnnotationInstance annotation : cloudUiViews) {
+      log.info("Found " + annotation.target().toString());
+      recorder
+          .registerViews(beanContainer.getValue(), annotation.target().toString(),
+              annotation.value().asString());
     }
   }
-  /*
-  @BuildStep
-  void reflection(BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
-    log.info("Register reflective CLasses");
-
-    // Vaadin
-    ReflectiveClassBuildItem vaadinClassBuildItem = ReflectiveClassBuildItem
-        .builder("com.vaadin.flow.component.UI",
-            "com.vaadin.flow.component.PollEvent",
-            "com.vaadin.flow.component.ClickEvent",
-            "com.vaadin.flow.component.CompositionEndEvent",
-            "com.vaadin.flow.component.CompositionStartEvent",
-            "com.vaadin.flow.component.CompositionUpdateEvent",
-            "com.vaadin.flow.component.KeyDownEvent",
-            "com.vaadin.flow.component.KeyPressEvent",
-            "com.vaadin.flow.component.KeyUpEvent",
-            "com.vaadin.flow.component.splitlayout.GeneratedVaadinSplitLayout$SplitterDragendEvent",
-            "com.vaadin.flow.component.details.Details$OpenedChangeEvent",
-            "com.vaadin.flow.component.details.Details",
-            "com.vaadin.flow.router.InternalServerError",
-            "com.vaadin.flow.router.RouteNotFoundError",
-            "com.vaadin.flow.theme.lumo.Lumo")
-        .constructors(true)
-        .methods(true)
-        .build();
-
-    reflectiveClass.produce(vaadinClassBuildItem);
-    // Athmosphere
-    ReflectiveClassBuildItem athmosClassBuildItem = ReflectiveClassBuildItem
-        .builder("org.atmosphere.cpr.DefaultBroadcaster",
-            "org.atmosphere.cpr.DefaultAtmosphereResourceFactory",
-            "org.atmosphere.cpr.DefaultBroadcasterFactory",
-            "org.atmosphere.cpr.DefaultMetaBroadcaster",
-            "org.atmosphere.cpr.DefaultAtmosphereResourceSessionFactory",
-            "org.atmosphere.util.VoidAnnotationProcessor",
-            "org.atmosphere.cache.UUIDBroadcasterCache",
-            "org.atmosphere.websocket.protocol.SimpleHttpProtocol",
-            "org.atmosphere.interceptor.IdleResourceInterceptor",
-            "org.atmosphere.interceptor.OnDisconnectInterceptor",
-            "org.atmosphere.interceptor.WebSocketMessageSuspendInterceptor",
-            "org.atmosphere.interceptor.JavaScriptProtocol",
-            "org.atmosphere.interceptor.JSONPAtmosphereInterceptor",
-            "org.atmosphere.interceptor.SSEAtmosphereInterceptor",
-            "org.atmosphere.interceptor.AndroidAtmosphereInterceptor",
-            "org.atmosphere.interceptor.PaddingAtmosphereInterceptor",
-            "org.atmosphere.interceptor.CacheHeadersInterceptor",
-            "org.atmosphere.interceptor.CorsInterceptor")
-        .constructors(true)
-        .methods(true)
-        .build();
-
-    reflectiveClass.produce(athmosClassBuildItem);
-  }
-   */
 }

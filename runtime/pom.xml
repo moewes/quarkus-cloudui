@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-
-  <groupId>net.moewes</groupId>
   <artifactId>cloud-ui-quarkus-extension</artifactId>
+  <groupId>net.moewes</groupId>
+  <modelVersion>4.0.0</modelVersion>
   <version>0.1.0-SNAPSHOT</version>
 
   <parent>
@@ -21,59 +20,74 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-core</artifactId>
-      <version>${quarkus.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-undertow</artifactId>
-      <version>${quarkus.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>net.moewes</groupId>
-      <artifactId>cloud-ui-core</artifactId>
-      <version>0.1.0-SNAPSHOT</version>
-    </dependency>
-  </dependencies>
+  <repositories>
+    <repository>
+      <id>github</id>
+      <name>GitHub OWNER Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/moewes/cloud-ui-client</url>
+    </repository>
+  </repositories>
 
   <build>
     <plugins>
       <plugin>
-        <groupId>io.quarkus</groupId>
         <artifactId>quarkus-bootstrap-maven-plugin</artifactId>
-        <version>${quarkus.version}</version>
-        <!-- Executions configuration can be inherited from quarkus-build-parent -->
         <executions>
           <execution>
-            <goals>
-              <goal>extension-descriptor</goal>
-            </goals>
             <configuration>
               <deployment>${project.groupId}:${project.artifactId}-deployment:${project.version}
               </deployment>
             </configuration>
+            <goals>
+              <goal>extension-descriptor</goal>
+            </goals>
           </execution>
         </executions>
+        <groupId>io.quarkus</groupId>
+        <!-- Executions configuration can be inherited from quarkus-build-parent -->
+        <version>${quarkus.version}</version>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
         <configuration>
           <annotationProcessorPaths>
             <path>
-              <groupId>io.quarkus</groupId>
               <artifactId>quarkus-extension-processor</artifactId>
+              <groupId>io.quarkus</groupId>
               <version>${quarkus.version}</version>
             </path>
           </annotationProcessorPaths>
           <source>8</source>
           <target>8</target>
         </configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <version>3.8.1</version>
       </plugin>
     </plugins>
   </build>
+
+  <dependencies>
+    <dependency>
+      <artifactId>quarkus-core</artifactId>
+      <groupId>io.quarkus</groupId>
+    </dependency>
+    <dependency>
+      <artifactId>quarkus-undertow</artifactId>
+      <groupId>io.quarkus</groupId>
+    </dependency>
+    <dependency>
+      <artifactId>quarkus-jackson</artifactId>
+      <groupId>io.quarkus</groupId>
+    </dependency>
+    <dependency>
+      <artifactId>cloud-ui-client</artifactId>
+      <groupId>net.moewes.cloud-ui</groupId>
+      <version>0.1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <artifactId>cloud-ui-core</artifactId>
+      <groupId>net.moewes</groupId>
+      <version>0.1.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
 </project>
