@@ -26,6 +26,11 @@
       <name>GitHub OWNER Apache Maven Packages</name>
       <url>https://maven.pkg.github.com/moewes/cloud-ui-client</url>
     </repository>
+    <repository>
+      <id>github</id>
+      <name>GitHub OWNER Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/moewes/cloud-ui-core</url>
+    </repository>
   </repositories>
 
   <build>
