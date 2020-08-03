@@ -25,13 +25,17 @@
       <id>github_cloud_ui_client</id>
       <name>GitHub OWNER Apache Maven Packages</name>
       <url>https://maven.pkg.github.com/moewes/cloud-ui-client</url>
-      <snapshots></snapshots>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
     </repository>
     <repository>
       <id>github_cloud_ui_core</id>
       <name>GitHub OWNER Apache Maven Packages</name>
       <url>https://maven.pkg.github.com/moewes/cloud-ui-core</url>
-      <snapshots></snapshots>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
     </repository>
   </repositories>
 
