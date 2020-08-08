@@ -14,6 +14,7 @@ import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import java.util.Collection;
 import javax.enterprise.context.RequestScoped;
 import net.moewes.cloud.ui.annotations.CloudUiView;
+import net.moewes.cloud.ui.quarkus.runtime.CloudUi;
 import net.moewes.cloud.ui.quarkus.runtime.CloudUiRecorder;
 import net.moewes.cloud.ui.quarkus.runtime.CloudUiRouter;
 import org.jboss.jandex.AnnotationInstance;
@@ -24,8 +25,8 @@ import org.jboss.logging.Logger;
 public class CloudUiProcessor {
 
   private static final Logger log = Logger.getLogger(CloudUiProcessor.class);
-  static private DotName ROUTE_ANNOTATION = DotName.createSimple(CloudUiView.class.getName());
-  static private DotName REQUEST_SCOPED = DotName.createSimple(RequestScoped.class.getName());
+  static private final DotName VIEW = DotName.createSimple(CloudUiView.class.getName());
+  static private final DotName REQUEST_SCOPED = DotName.createSimple(RequestScoped.class.getName());
 
   @BuildStep
   FeatureBuildItem featureBuildItem() {
@@ -33,13 +34,13 @@ public class CloudUiProcessor {
   }
 
   @BuildStep
-  BeanDefiningAnnotationBuildItem registerX() {
-    return new BeanDefiningAnnotationBuildItem(ROUTE_ANNOTATION, REQUEST_SCOPED, false);
+  BeanDefiningAnnotationBuildItem registerViewAnnotation() {
+    return new BeanDefiningAnnotationBuildItem(VIEW, REQUEST_SCOPED, false);
   }
 
   @BuildStep
   AdditionalBeanBuildItem beans() {
-    return new AdditionalBeanBuildItem(CloudUiRouter.class);
+    return new AdditionalBeanBuildItem(CloudUiRouter.class, CloudUi.class);
   }
 
   @BuildStep
@@ -50,12 +51,18 @@ public class CloudUiProcessor {
       BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
 
     IndexView indexView = beanArchiveIndex.getIndex();
-    Collection<AnnotationInstance> cloudUiViews = indexView.getAnnotations(ROUTE_ANNOTATION);
+    Collection<AnnotationInstance> cloudUiViews = indexView.getAnnotations(VIEW);
     for (AnnotationInstance annotation : cloudUiViews) {
       log.info("Found " + annotation.target().toString());
       recorder
           .registerViews(beanContainer.getValue(), annotation.target().toString(),
               annotation.value().asString());
     }
+  }
+
+  @BuildStep
+  ReflectiveClassBuildItem reflection() {
+    return new ReflectiveClassBuildItem(true, true,
+        "net.moewes.cloud.ui.UiElement");
   }
 }

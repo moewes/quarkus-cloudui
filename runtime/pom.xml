@@ -91,6 +91,10 @@
       <groupId>io.quarkus</groupId>
     </dependency>
     <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-webjars-locator</artifactId>
+    </dependency>
+    <dependency>
       <artifactId>cloud-ui-client</artifactId>
       <groupId>net.moewes.cloud-ui</groupId>
       <version>0.1.0-SNAPSHOT</version>

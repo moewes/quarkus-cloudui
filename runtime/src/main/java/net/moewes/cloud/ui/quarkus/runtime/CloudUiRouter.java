@@ -7,10 +7,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Instance;
@@ -20,10 +19,9 @@ import net.moewes.cloud.ui.UiComponent;
 @ApplicationScoped
 public class CloudUiRouter {
 
+  private final Map<String, String> views = new HashMap<>();
   @Inject
   Instance<Object> instance;
-
-  private Map<String, String> views = new HashMap<>();
 
   public void addView(String view, String path) {
     System.out.println("View " + view + " added.");
@@ -39,57 +37,41 @@ public class CloudUiRouter {
 
     views.values().stream().forEach(view -> {
       router.get("/" + view).consumes("application/json").handler(BodyHandler.create())
-          .handler(this::handleGet);
+          .handler(rc -> handleGet(rc, view));
       router.post("/" + view).consumes("application/json").handler(BodyHandler.create())
-          .handler(this::handlePost);
+          .handler(rc -> handlePost(rc, view));
     });
-
-    router.get("/my-route").handler(rc -> rc.response().end("Hello from my route"));
 
     router.get("/views").handler(rc -> {
-      String allViews = views.values().stream().collect(Collectors.joining(", "));
+      String allViews = String.join(", ", views.values());
       rc.response().end(allViews);
     });
-
-    router.post("/ui/*").consumes("application/json").handler(BodyHandler.create()).handler(
-        this::handlePost);
-
-    router.get("/ui/*").handler((this::handleGet));
   }
 
-  private UiComponent getView() {
+  private UiComponent getView(String viewClassName) {
 
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     Class<?> viewClass = null;
     try {
-      viewClass = Class.forName("net.moewes.ExampleView", true, classLoader);
+      viewClass = Class.forName(viewClassName, true, classLoader);
     } catch (ClassNotFoundException e) {
       e.printStackTrace();
     }
-    UiComponent view = (UiComponent) instance.select(viewClass).get();
-    return view;
+    return (UiComponent) instance.select(viewClass).get();
   }
 
 
-  private void handleGet(RoutingContext rc) {
-
-    System.out.println(rc.request().method());
-    System.out.println(rc.mountPoint());
-    System.out.println(rc.request().absoluteURI());
-    System.out.println(rc.request().path());
+  private void handleGet(RoutingContext rc, String viewClassName) {
 
     String result = "[]";
 
-    String substring = rc.normalisedPath().substring(4);
-    System.out.println("Path : " + substring);
-
     ManagedContext requestContext = Arc.container().requestContext();
     if (requestContext.isActive()) {
-      result = getString();
+      result = getViewContent(viewClassName);
     } else {
       try {
         requestContext.activate();
-        result = getString();
+        result = getViewContent(viewClassName);
       } finally {
         requestContext.terminate();
       }
@@ -97,20 +79,17 @@ public class CloudUiRouter {
     rc.response().end(result);
   }
 
-  private void handlePost(RoutingContext rc) {
+  private void handlePost(RoutingContext rc, String viewClassName) {
 
     String result = "[]";
 
-    String substring = rc.normalisedPath().substring(4);
-    System.out.println("Path : " + substring);
-
     ManagedContext requestContext = Arc.container().requestContext();
     if (requestContext.isActive()) {
-      result = postString(rc);
+      result = processViewEvent(rc, viewClassName);
     } else {
       try {
         requestContext.activate();
-        result = postString(rc);
+        result = processViewEvent(rc, viewClassName);
       } finally {
         requestContext.terminate();
       }
@@ -118,20 +97,21 @@ public class CloudUiRouter {
     rc.response().end(result);
   }
 
-  private String getString() { // FIXME Name
+  private String getViewContent(String viewClassName) {
     String result;
-    UiComponent view = getView();
+    UiComponent view = getView(viewClassName);
     view.render();
-    result = Json.encode(Arrays.asList(view.getElement()));
+    result = Json.encode(Collections.singletonList(view.getElement()));
     return result;
   }
 
-  private String postString(RoutingContext rc) { // FIXME Name
+  private String processViewEvent(RoutingContext rc, String viewClassName) {
 
     Map<String, String> fields = new HashMap<>();
     Map<String, String> events = new HashMap<>();
 
-    UiComponent viewComponent = getView();
+    CloudUi ui = instance.select(CloudUi.class).get();
+    UiComponent viewComponent = getView(viewClassName);
 
     JsonObject json = rc.getBodyAsJson();
 
@@ -157,14 +137,12 @@ public class CloudUiRouter {
 
     for (String id : events.keySet()) {
       viewComponent.getComponentWithId(id).ifPresent(
-          component -> {
-            component.handleEvent(events.get(id));
-          });
+          component -> component.handleEvent(events.get(id)));
     }
     String result;
-    UiComponent view = getView();
+    UiComponent view = ui.getNextView().orElse(viewComponent);
     view.render();
-    result = Json.encode(Arrays.asList(view.getElement()));
+    result = Json.encode(Collections.singletonList(view.getElement()));
     return result;
   }
 }

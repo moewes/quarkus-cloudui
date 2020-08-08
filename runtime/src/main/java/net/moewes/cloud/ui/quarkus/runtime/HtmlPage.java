@@ -6,8 +6,8 @@ public class HtmlPage {
 
     String result =
         "<html>" +
-            "<head><script src=\"http://localhost:8080/index.js\"></script></head>" +
-            "<body><open-dxp-portlet backend=\"http://localhost:8080/" + view
+            "<head><script src=\"/webjars/cloud-ui/index.js\"></script></head>" +
+            "<body><open-dxp-portlet backend=\"/" + view
             + "\"></open-dxp-portlet><body>";
 
     return result;

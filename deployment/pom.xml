@@ -37,6 +37,10 @@
       <artifactId>quarkus-jackson-deployment</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-webjars-locator-deployment</artifactId>
+    </dependency>
+    <dependency>
       <groupId>net.moewes</groupId>
       <artifactId>cloud-ui-quarkus-extension</artifactId>
       <version>0.1.0-SNAPSHOT</version>
