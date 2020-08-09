@@ -23,6 +23,9 @@ public class CloudUiRouter {
   @Inject
   Instance<Object> instance;
 
+  @Inject
+  HtmlPageBuilder pageBuilder;
+
   public void addView(String view, String path) {
     System.out.println("View " + view + " added.");
     views.put(path, view);
@@ -32,7 +35,7 @@ public class CloudUiRouter {
     System.out.println("Router init");
 
     views.keySet().stream().forEach(path -> {
-      router.get(path).handler(rc -> rc.response().end(HtmlPage.getPage(views.get(path))));
+      router.get(path).handler(rc -> rc.response().end(pageBuilder.getPage(views.get(path))));
     });
 
     views.values().stream().forEach(view -> {

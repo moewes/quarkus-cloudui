@@ -9,18 +9,24 @@ import io.quarkus.arc.deployment.BeanDefiningAnnotationBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.Record;
+import io.quarkus.deployment.builditem.ApplicationArchivesBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import javax.enterprise.context.RequestScoped;
 import net.moewes.cloud.ui.annotations.CloudUiView;
 import net.moewes.cloud.ui.quarkus.runtime.CloudUi;
 import net.moewes.cloud.ui.quarkus.runtime.CloudUiRecorder;
 import net.moewes.cloud.ui.quarkus.runtime.CloudUiRouter;
+import net.moewes.cloud.ui.quarkus.runtime.HtmlPageBuilder;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.logging.Logger;
+import org.webjars.WebJarAssetLocator;
 
 public class CloudUiProcessor {
 
@@ -40,12 +46,12 @@ public class CloudUiProcessor {
 
   @BuildStep
   AdditionalBeanBuildItem beans() {
-    return new AdditionalBeanBuildItem(CloudUiRouter.class, CloudUi.class);
+    return new AdditionalBeanBuildItem(CloudUiRouter.class, CloudUi.class, HtmlPageBuilder.class);
   }
 
   @BuildStep
   @Record(STATIC_INIT)
-  void scanForBeans(CloudUiRecorder recorder,
+  void scanForViews(CloudUiRecorder recorder,
       BeanArchiveIndexBuildItem beanArchiveIndex,
       BeanContainerBuildItem beanContainer,
       BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
@@ -61,8 +67,26 @@ public class CloudUiProcessor {
   }
 
   @BuildStep
+  @Record(STATIC_INIT)
+  void scanWebjarResources(CloudUiRecorder recorder, BeanContainerBuildItem beanContainer,
+      ApplicationArchivesBuildItem applicationArchivesBuildItem) {
+
+    log.info("extract resources from webjar");
+    WebJarAssetLocator webJarLocator = new WebJarAssetLocator();
+    Map<String, String> webjarNameToVersionMap = webJarLocator.getWebJars();
+    webjarNameToVersionMap.keySet().stream()
+        .forEach(item -> log.info(item + " " + webjarNameToVersionMap.get(item)));
+
+    List<String> scripts = webJarLocator.listAssets().stream().filter(item -> item.endsWith(".js"))
+        .map(item -> item.replace("META-INF/resources", ""))
+        .collect(Collectors.toList());
+
+    recorder.touch(beanContainer.getValue(), scripts);
+  }
+
+  @BuildStep
   ReflectiveClassBuildItem reflection() {
     return new ReflectiveClassBuildItem(true, true,
-        "net.moewes.cloud.ui.UiElement");
+        "net.moewes.cloud.ui.UiElement", "net.moewes.cloud.ui.UiElementAttribute");
   }
 }
