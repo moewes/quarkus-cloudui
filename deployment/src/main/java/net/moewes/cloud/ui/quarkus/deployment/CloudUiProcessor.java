@@ -89,4 +89,16 @@ public class CloudUiProcessor {
     return new ReflectiveClassBuildItem(true, true,
         "net.moewes.cloud.ui.UiElement", "net.moewes.cloud.ui.UiElementAttribute");
   }
+/*
+  @BuildStep
+  ContextRegistrarBuildItem myContext() { // FIXME Name
+    return new ContextRegistrarBuildItem(new ContextRegistrar() {
+      @Override
+      public void register(RegistrationContext registrationContext) {
+        registrationContext.configure(UiScopend.class).normal().contextClass(UiContextContext.class)
+            .done();
+      }
+    });
+  }
+  */
 }
