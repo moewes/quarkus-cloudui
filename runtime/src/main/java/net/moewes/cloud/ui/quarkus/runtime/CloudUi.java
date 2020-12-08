@@ -18,11 +18,6 @@ public class CloudUi {
 
   private Class<? extends UiComponent> nextView;
 
-  @PostConstruct
-  public void init() {
-    log.info("init");
-  }
-
   public void navigate(Class<? extends UiComponent> viewClass) {
     nextView = viewClass;
   }
