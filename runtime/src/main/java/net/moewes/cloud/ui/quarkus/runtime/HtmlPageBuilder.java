@@ -2,39 +2,50 @@ package net.moewes.cloud.ui.quarkus.runtime;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 import javax.enterprise.context.ApplicationScoped;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 public class HtmlPageBuilder {
 
-  private List<String> scripts;
+    @ConfigProperty(name = "quarkus.http.root-path", defaultValue = "")
+    String rootpath;
 
-  public String getPage(String view) {
+    private List<String> scripts;
 
-    String result = "<!doctype html>" +
-        "<html>" +
-        "<head>" +
-        "<meta charset=\"utf-8\">" +
-        "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
-    String script = scripts.stream().map(item ->
-        "<script src=\"" + item + "\"></script>").collect(Collectors.joining());
+    public String getPage(String view) {
 
-    result = result + script + getBasicStyle() +
-        "</head>" +
-        "<body><open-dxp-portlet backend=\"/" + view
-        + "\"></open-dxp-portlet><body>";
+        String result = "<!doctype html>" +
+                "<html>" +
+                "<head>" +
+                "<meta charset=\"utf-8\">" +
+                "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
+        String script = scripts.stream().map(item ->
+                "<script src=\"" + getRootpath() + item + "\"></script>").collect(Collectors.joining());
 
-    return result;
-  }
+        result = result + script + getBasicStyle() +
+                "</head>" +
+                "<body><open-dxp-portlet backend=\"" + getRootpath() + "/" + view
+                + "\"></open-dxp-portlet><body>";
 
-  public void setScripts(List<String> scripts) {
-    this.scripts = scripts;
-  }
+        return result;
+    }
 
-  private String getBasicStyle() {
+    private String getRootpath() {
 
-    return "<style>" +
-        "body { margin: 0; padding: 5px } " +
-        "</style>";
-  }
+        return "/".equals(rootpath) ? "" : rootpath;
+    }
+
+    public void setScripts(List<String> scripts) {
+        this.scripts = scripts;
+    }
+
+    private String getBasicStyle() {
+
+        return "<style>" +
+                "body { margin: 0; padding: 5px } " +
+                "</style>";
+    }
 }
