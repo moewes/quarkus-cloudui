@@ -27,8 +27,8 @@ public class HtmlPageBuilder {
 
         result = result + script + getBasicStyle() +
                 "</head>" +
-                "<body><open-dxp-portlet backend=\"" + getRootpath() + "/" + view
-                + "\"></open-dxp-portlet><body>";
+                "<body><cloudui-view backend=\"" + getRootpath() + "/" + view
+                + "\"></cloudui-view><body>";
 
         return result;
     }
