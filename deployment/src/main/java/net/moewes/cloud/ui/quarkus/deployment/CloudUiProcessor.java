@@ -43,7 +43,7 @@ public class CloudUiProcessor {
 
     @BuildStep
     BeanDefiningAnnotationBuildItem registerViewAnnotation() {
-        return new BeanDefiningAnnotationBuildItem(VIEW, REQUEST_SCOPED, false);
+        return new BeanDefiningAnnotationBuildItem(VIEW, REQUEST_SCOPED, true);
     }
 
     @BuildStep
