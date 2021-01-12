@@ -3,7 +3,6 @@ package net.moewes.cloud.ui.quarkus.runtime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
@@ -20,6 +19,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import net.moewes.cloud.ui.UiComponent;
+import net.moewes.cloud.ui.UiEvent;
 
 @ApplicationScoped
 public class CloudUiRouter {
@@ -34,13 +34,11 @@ public class CloudUiRouter {
     private ClassLoader classLoader;
 
     public void addView(String view, String path) {
-        System.out.println("View " + view + " added.");
         views.put(path, view);
     }
 
     public void init(@Observes Router router) {
-        System.out.println("Router init");
-
+        
         views.keySet().stream().forEach(path -> {
             router.get(path).handler(rc -> rc.response().end(pageBuilder.getPage(views.get(path))));
         });
@@ -60,16 +58,13 @@ public class CloudUiRouter {
 
     private UiComponent getView(String viewClassName) {
 
-        Logger.getLogger("GetView").info(this + " " + classLoader);
         Class<?> viewClass = null;
         try {
             viewClass = Class.forName(viewClassName, true, classLoader);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-        return
-                (UiComponent) CDI.current().select(viewClass, Default.Literal.INSTANCE).get();
-       
+        return (UiComponent) CDI.current().select(viewClass, Default.Literal.INSTANCE).get();
     }
 
 
@@ -120,16 +115,23 @@ public class CloudUiRouter {
     private String processViewEvent(RoutingContext rc, String viewClassName) {
 
         Map<String, String> fields = new HashMap<>();
-        Map<String, String> events = new HashMap<>();
+        Map<String, UiEvent> events = new HashMap<>();
 
         CloudUi ui = instance.select(CloudUi.class).get();
         UiComponent viewComponent = getView(viewClassName);
 
         JsonObject json = rc.getBodyAsJson();
 
-        String event = json.getString("event");
+        String eventname = json.getString("event");
         String eventSource = json.getString("id");
-        events.put(eventSource, event);
+        Map<String, Object> eventMap;
+        try {
+            eventMap = json.getJsonObject("details").getMap();
+        } catch (java.lang.ClassCastException e) {
+            eventMap = new HashMap<>();
+        }
+        events.put(eventSource, new UiEvent(eventname, eventMap));
+
 
         json.getJsonArray("fields").forEach(item -> {
             JsonObject fieldObject = (JsonObject) item;
