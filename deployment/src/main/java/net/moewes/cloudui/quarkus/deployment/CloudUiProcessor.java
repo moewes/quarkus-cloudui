@@ -1,4 +1,4 @@
-package net.moewes.cloud.ui.quarkus.deployment;
+package net.moewes.cloudui.quarkus.deployment;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,11 +17,11 @@ import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.ApplicationArchivesBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
-import net.moewes.cloud.ui.annotations.CloudUiView;
-import net.moewes.cloud.ui.quarkus.runtime.CloudUi;
-import net.moewes.cloud.ui.quarkus.runtime.CloudUiRecorder;
-import net.moewes.cloud.ui.quarkus.runtime.CloudUiRouter;
-import net.moewes.cloud.ui.quarkus.runtime.HtmlPageBuilder;
+import net.moewes.cloudui.annotations.CloudUiView;
+import net.moewes.cloudui.quarkus.runtime.CloudUi;
+import net.moewes.cloudui.quarkus.runtime.CloudUiRecorder;
+import net.moewes.cloudui.quarkus.runtime.CloudUiRouter;
+import net.moewes.cloudui.quarkus.runtime.HtmlPageBuilder;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
@@ -89,6 +89,6 @@ public class CloudUiProcessor {
     @BuildStep
     ReflectiveClassBuildItem reflection() {
         return new ReflectiveClassBuildItem(true, true,
-                "net.moewes.cloud.ui.UiElement", "net.moewes.cloud.ui.UiElementAttribute");
+                "net.moewes.cloudui.UiElement", "net.moewes.cloudui.UiElementAttribute");
     }
 }

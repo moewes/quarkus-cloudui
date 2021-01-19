@@ -1,4 +1,4 @@
-package net.moewes.cloud.ui.quarkus.runtime;
+package net.moewes.cloudui.quarkus.runtime;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,8 +18,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
-import net.moewes.cloud.ui.UiComponent;
-import net.moewes.cloud.ui.UiEvent;
+import net.moewes.cloudui.UiComponent;
+import net.moewes.cloudui.UiEvent;
 
 @ApplicationScoped
 public class CloudUiRouter {
@@ -38,7 +38,7 @@ public class CloudUiRouter {
     }
 
     public void init(@Observes Router router) {
-        
+
         views.keySet().stream().forEach(path -> {
             router.get(path).handler(rc -> rc.response().end(pageBuilder.getPage(views.get(path))));
         });

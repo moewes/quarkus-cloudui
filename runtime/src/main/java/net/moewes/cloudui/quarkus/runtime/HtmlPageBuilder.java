@@ -1,4 +1,4 @@
-package net.moewes.cloud.ui.quarkus.runtime;
+package net.moewes.cloudui.quarkus.runtime;
 
 import java.util.List;
 import java.util.stream.Collectors;
