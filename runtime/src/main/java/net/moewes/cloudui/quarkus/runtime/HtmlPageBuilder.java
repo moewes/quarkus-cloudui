@@ -45,7 +45,7 @@ public class HtmlPageBuilder {
     private String getBasicStyle() {
 
         return "<style>" +
-                "body { margin: 0; padding: 5px } " +
+                "body { margin: 0; padding: 0px } " +
                 "</style>";
     }
 }
