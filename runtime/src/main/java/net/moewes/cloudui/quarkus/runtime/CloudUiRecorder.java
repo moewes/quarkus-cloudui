@@ -32,4 +32,8 @@ public class CloudUiRecorder {
 
         return new PageHandler();
     }
+
+    public Handler<RoutingContext> getViewHandler(BeanContainer beanContainer) {
+        return new ViewRequestHandler(beanContainer, Thread.currentThread().getContextClassLoader());
+    }
 }

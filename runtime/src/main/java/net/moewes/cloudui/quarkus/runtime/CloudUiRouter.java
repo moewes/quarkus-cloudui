@@ -1,7 +1,9 @@
 package net.moewes.cloudui.quarkus.runtime;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -20,6 +22,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import net.moewes.cloudui.UiComponent;
 import net.moewes.cloudui.UiEvent;
+import net.moewes.cloudui.quarkus.runtime.dev.ViewInfo;
 
 @ApplicationScoped
 public class CloudUiRouter {
@@ -58,6 +61,15 @@ public class CloudUiRouter {
             String allViews = String.join(", ", views.values());
             rc.response().end(allViews);
         });
+    }
+
+    public List<ViewInfo> getAllViews() {
+        ArrayList<ViewInfo> result = new ArrayList<>();
+
+        views.forEach((path, view) -> {
+            result.add(ViewInfo.builder().view(view).path(path).build());
+        });
+        return result;
     }
 
     private UiComponent getView(String viewClassName) {

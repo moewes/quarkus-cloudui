@@ -1,0 +1,25 @@
+{#include main}
+{#title}Views{/title}
+{#body}
+<table class="table table-striped custom">
+    <thead class="thead-dark">
+    <tr>
+        <th scope="col">View</th>
+        <th scope="col">Path</th>
+    </tr>
+    </thead>
+    <tbody>
+    {#for view in info:views}
+    <tr>
+        <td>
+            {view.view}
+        </td>
+        <td>
+            {view.path}
+        </td>
+    </tr>
+    {/for}
+    </tbody>
+</table>
+{/body}
+{/include}

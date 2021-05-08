@@ -1,0 +1,11 @@
+---
+name: "CloudUi"
+metadata:
+  short-name: "webjars-locator"
+  keywords:
+    - "CloudUi"
+    - "UI"
+  guide: "https://moewes.github.io/cloud-ui"
+  categories:
+    - "UI"
+  status: "stable"

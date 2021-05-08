@@ -15,14 +15,12 @@ import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.ApplicationArchivesBuildItem;
-import io.quarkus.deployment.builditem.ExecutorBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.vertx.http.deployment.RouteBuildItem;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 import net.moewes.cloudui.annotations.CloudUiView;
-import net.moewes.cloudui.quarkus.runtime.AlphaRecorder;
 import net.moewes.cloudui.quarkus.runtime.CloudUi;
 import net.moewes.cloudui.quarkus.runtime.CloudUiRecorder;
 import net.moewes.cloudui.quarkus.runtime.CloudUiRouter;
@@ -62,15 +60,13 @@ public class CloudUiProcessor {
                       BeanArchiveIndexBuildItem beanArchiveIndex,
                       BeanContainerBuildItem beanContainer,
                       BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
-                      BuildProducer<RouteBuildItem> routes,
-                      AlphaRecorder alpharecorder,
-                      ExecutorBuildItem executorBuildItem) {
+                      BuildProducer<RouteBuildItem> routes) {
 
         IndexView indexView = beanArchiveIndex.getIndex();
         Collection<AnnotationInstance> cloudUiViews = indexView.getAnnotations(VIEW);
 
         Handler<RoutingContext> pageHandler = recorder.getPageHandler();
-        Handler<RoutingContext> viewHandler = alpharecorder.getHandler(beanContainer.getValue());
+        Handler<RoutingContext> viewHandler = recorder.getViewHandler(beanContainer.getValue());
 
         for (AnnotationInstance annotation : cloudUiViews) {
             String view = annotation.target().toString();
@@ -81,7 +77,6 @@ public class CloudUiProcessor {
 
             routes.produce(RouteBuildItem.builder().route(path).handler(pageHandler).build());
             routes.produce(RouteBuildItem.builder().route("/" + view).handler(viewHandler).build());
-            //routes.produce(new RouteBuildItem(path, pageHandler, false));
         }
     }
 
@@ -93,7 +88,7 @@ public class CloudUiProcessor {
         log.info("extract resources from webjar");
         WebJarAssetLocator webJarLocator = new WebJarAssetLocator();
         Map<String, String> webjarNameToVersionMap = webJarLocator.getWebJars();
-        webjarNameToVersionMap.keySet().stream()
+        webjarNameToVersionMap.keySet()
                 .forEach(item -> log.info(item + " " + webjarNameToVersionMap.get(item)));
 
         List<String> scripts = webJarLocator.listAssets().stream().filter(item -> item.endsWith(".js"))

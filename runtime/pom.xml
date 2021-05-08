@@ -5,6 +5,8 @@
     <artifactId>cloud-ui-quarkus-extension</artifactId>
     <groupId>net.moewes</groupId>
     <modelVersion>4.0.0</modelVersion>
+    <name>CloudUi - Quarkus extension Runtime</name>
+    <description>Cloud native java web component framework</description>
 
     <parent>
         <artifactId>cloud-ui-quarkus</artifactId>
@@ -17,6 +19,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <lombok.version>1.18.12</lombok.version>
     </properties>
 
     <repositories>
@@ -65,6 +68,11 @@
                             <artifactId>quarkus-extension-processor</artifactId>
                             <groupId>io.quarkus</groupId>
                             <version>${quarkus.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
                     <source>8</source>
