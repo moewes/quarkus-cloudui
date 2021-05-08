@@ -5,6 +5,8 @@ import java.util.logging.Logger;
 
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.runtime.annotations.Recorder;
+import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
 
 @Recorder
 public class CloudUiRecorder {
@@ -24,5 +26,10 @@ public class CloudUiRecorder {
         log.info("register scripts ");
         HtmlPageBuilder pageBuilder = beanContainer.instance(HtmlPageBuilder.class);
         pageBuilder.setScripts(scripts);
+    }
+
+    public Handler<RoutingContext> getPageHandler() {
+
+        return new PageHandler();
     }
 }

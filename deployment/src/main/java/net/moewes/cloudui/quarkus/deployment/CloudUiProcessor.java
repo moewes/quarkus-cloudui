@@ -15,9 +15,14 @@ import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.ApplicationArchivesBuildItem;
+import io.quarkus.deployment.builditem.ExecutorBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import io.quarkus.vertx.http.deployment.RouteBuildItem;
+import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
 import net.moewes.cloudui.annotations.CloudUiView;
+import net.moewes.cloudui.quarkus.runtime.AlphaRecorder;
 import net.moewes.cloudui.quarkus.runtime.CloudUi;
 import net.moewes.cloudui.quarkus.runtime.CloudUiRecorder;
 import net.moewes.cloudui.quarkus.runtime.CloudUiRouter;
@@ -56,15 +61,27 @@ public class CloudUiProcessor {
     void scanForViews(CloudUiRecorder recorder,
                       BeanArchiveIndexBuildItem beanArchiveIndex,
                       BeanContainerBuildItem beanContainer,
-                      BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
+                      BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
+                      BuildProducer<RouteBuildItem> routes,
+                      AlphaRecorder alpharecorder,
+                      ExecutorBuildItem executorBuildItem) {
 
         IndexView indexView = beanArchiveIndex.getIndex();
         Collection<AnnotationInstance> cloudUiViews = indexView.getAnnotations(VIEW);
+
+        Handler<RoutingContext> pageHandler = recorder.getPageHandler();
+        Handler<RoutingContext> viewHandler = alpharecorder.getHandler(beanContainer.getValue());
+
         for (AnnotationInstance annotation : cloudUiViews) {
-            log.info("Found " + annotation.target().toString());
-            recorder
-                    .registerViews(beanContainer.getValue(), annotation.target().toString(),
-                            annotation.value().asString());
+            String view = annotation.target().toString();
+            String path = annotation.value().asString();
+
+            log.info("Found " + view);
+            recorder.registerViews(beanContainer.getValue(), view, path);
+
+            routes.produce(RouteBuildItem.builder().route(path).handler(pageHandler).build());
+            routes.produce(RouteBuildItem.builder().route("/" + view).handler(viewHandler).build());
+            //routes.produce(new RouteBuildItem(path, pageHandler, false));
         }
     }
 

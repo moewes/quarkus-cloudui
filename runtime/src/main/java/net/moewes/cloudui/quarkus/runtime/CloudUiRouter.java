@@ -13,11 +13,11 @@ import javax.inject.Inject;
 
 import io.quarkus.arc.Arc;
 import io.quarkus.arc.ManagedContext;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.BodyHandler;
 import net.moewes.cloudui.UiComponent;
 import net.moewes.cloudui.UiEvent;
 
@@ -37,17 +37,21 @@ public class CloudUiRouter {
         views.put(path, view);
     }
 
+    public String getViewFromPath(String path) {
+        return views.get(path);
+    }
+
     public void init(@Observes Router router) {
 
         views.keySet().stream().forEach(path -> {
-            router.get(path).handler(rc -> rc.response().end(pageBuilder.getPage(views.get(path))));
+            //router.get(path).handler(rc -> rc.response().end(pageBuilder.getPage(views.get(path))));
         });
 
         views.values().stream().forEach(view -> {
-            router.get("/" + view).consumes("application/json").handler(BodyHandler.create())
-                    .blockingHandler(rc -> handleGet(rc, view));
-            router.post("/" + view).consumes("application/json").handler(BodyHandler.create())
-                    .blockingHandler(rc -> handlePost(rc, view));
+           /* router.get("/" + view).consumes("application/json").handler(BodyHandler.create())
+                    .blockingHandler(rc -> handleGet(rc, view)); */
+           /* router.post("/" + view).consumes("application/json").handler(BodyHandler.create())
+                    .blockingHandler(rc -> handlePost(rc, view));*/
         });
 
         router.get("/views").handler(rc -> {
@@ -70,6 +74,9 @@ public class CloudUiRouter {
 
     private void handleGet(RoutingContext rc, String viewClassName) {
 
+        HttpServerRequest request = rc.request();
+        request.pause();
+
         String result = "[]";
 
         ManagedContext requestContext = Arc.container().requestContext();
@@ -87,6 +94,9 @@ public class CloudUiRouter {
     }
 
     private void handlePost(RoutingContext rc, String viewClassName) {
+
+        HttpServerRequest request = rc.request();
+        request.pause();
 
         String result = "[]";
 

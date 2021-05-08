@@ -27,7 +27,9 @@ public class CloudUi {
 
         if (nextView != null) {
             Instance<? extends UiComponent> view = instance.select(nextView);
-            return Optional.ofNullable(view.get());
+            UiComponent uiComponent = view.get();
+            uiComponent.setId(nextView.getName());
+            return Optional.ofNullable(uiComponent);
         }
         return Optional.empty();
     }
