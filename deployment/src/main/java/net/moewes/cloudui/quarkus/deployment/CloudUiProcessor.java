@@ -71,9 +71,8 @@ public class CloudUiProcessor {
         for (AnnotationInstance annotation : cloudUiViews) {
             String view = annotation.target().toString();
             String path = annotation.value().asString();
-
-            log.info("Found " + view);
-            recorder.registerViews(beanContainer.getValue(), view, path);
+            
+            recorder.registerView(beanContainer.getValue(), view, path);
 
             routes.produce(RouteBuildItem.builder().route(path).handler(pageHandler).build());
             routes.produce(RouteBuildItem.builder().route("/" + view).handler(viewHandler).build());

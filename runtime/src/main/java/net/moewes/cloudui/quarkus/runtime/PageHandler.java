@@ -14,7 +14,6 @@ public class PageHandler implements Handler<RoutingContext> {
     private CloudUiRouter cloudUiRouter;
 
     public PageHandler() {
-        log.info("constructor");
         cloudUiRouter = CDI.current().select(CloudUiRouter.class).get();
         pageBuilder = CDI.current().select(HtmlPageBuilder.class).get();
     }

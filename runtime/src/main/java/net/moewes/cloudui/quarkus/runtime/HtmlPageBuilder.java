@@ -11,7 +11,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 public class HtmlPageBuilder {
 
     @ConfigProperty(name = "quarkus.http.root-path", defaultValue = "")
-    String rootpath;
+    String rootPath;
 
     private List<String> scripts;
 
@@ -23,19 +23,19 @@ public class HtmlPageBuilder {
                 "<meta charset=\"utf-8\">" +
                 "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
         String script = scripts.stream().map(item ->
-                "<script src=\"" + getRootpath() + item + "\"></script>").collect(Collectors.joining());
+                "<script src=\"" + getRootPath() + item + "\"></script>").collect(Collectors.joining());
 
         result = result + script + getBasicStyle() +
                 "</head>" +
-                "<body><cloudui-view backend=\"" + getRootpath() + "/" + view
+                "<body><cloudui-view backend=\"" + getRootPath() + "/" + view
                 + "\"></cloudui-view><body>";
 
         return result;
     }
 
-    private String getRootpath() {
+    private String getRootPath() {
 
-        return "/".equals(rootpath) ? "" : rootpath;
+        return "/".equals(rootPath) ? "" : rootPath;
     }
 
     public void setScripts(List<String> scripts) {

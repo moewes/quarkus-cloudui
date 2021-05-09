@@ -21,8 +21,6 @@ public class CloudUiRouter {
     @Inject
     HtmlPageBuilder pageBuilder;
 
-    private ClassLoader classLoader;
-
     public void addView(String view, String path) {
         views.put(path, view);
     }
@@ -38,9 +36,5 @@ public class CloudUiRouter {
             result.add(ViewInfo.builder().view(view).path(path).build());
         });
         return result;
-    }
-
-    public void setClassLoader(ClassLoader contextClassLoader) {
-        this.classLoader = contextClassLoader;
     }
 }
