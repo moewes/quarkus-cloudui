@@ -10,9 +10,13 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import net.moewes.cloudui.quarkus.runtime.dev.ViewInfo;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 public class CloudUiRouter {
+
+    @ConfigProperty(name = "quarkus.http.root-path", defaultValue = "")
+    String rootPath;
 
     private final Map<String, String> views = new HashMap<>();
     @Inject
@@ -22,7 +26,11 @@ public class CloudUiRouter {
     HtmlPageBuilder pageBuilder;
 
     public void addView(String view, String path) {
-        views.put(path, view);
+        if ("/".equals(rootPath)) {
+            views.put(path, view);
+        } else {
+            views.put(rootPath + path, view);
+        }
     }
 
     public String getViewFromPath(String path) {
@@ -36,5 +44,9 @@ public class CloudUiRouter {
             result.add(ViewInfo.builder().view(view).path(path).build());
         });
         return result;
+    }
+
+    public String getRootPath() {
+        return rootPath;
     }
 }

@@ -24,19 +24,24 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
     private static final Logger log = Logger.getLogger("net.moewes.cloudui");
 
     protected final BeanContainer beanContainer;
-    // protected final Executor executor;
     protected final ClassLoader classLoader;
+    private CloudUiRouter cloudUiRouter;
 
     public ViewRequestHandler(BeanContainer beanContainer, ClassLoader classLoader) {
         this.beanContainer = beanContainer;
-        // this.executor = executor;
         this.classLoader = classLoader;
+        cloudUiRouter = CDI.current().select(CloudUiRouter.class).get();
     }
 
     @Override
     public void handle(RoutingContext routingContext) {
 
-        String view = routingContext.request().path().substring(1);
+        int i = 1;
+        if (!"/".equals(cloudUiRouter.getRootPath())) {
+            i = cloudUiRouter.getRootPath().length() + 1;
+        }
+
+        String view = routingContext.request().path().substring(i);
         log.info("view " + view);
 
         if (routingContext.request().method() == HttpMethod.GET) {
@@ -74,12 +79,16 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
         ManagedContext requestContext = beanContainer.requestContext();
         requestContext.activate();
 
-        if (rc.request().method() == HttpMethod.GET) {
-            result = getViewContent(viewClassName);
-        } else if (rc.request().method() == HttpMethod.POST) {
-            result = processViewEvent(json, viewClassName);
-        } else {
-            rc.fail(405);
+        try {
+            if (rc.request().method() == HttpMethod.GET) {
+                result = getViewContent(viewClassName);
+            } else if (rc.request().method() == HttpMethod.POST) {
+                result = processViewEvent(json, viewClassName);
+            } else {
+                rc.fail(405);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         requestContext.terminate();
