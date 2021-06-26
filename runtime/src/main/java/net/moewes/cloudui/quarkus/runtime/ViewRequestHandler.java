@@ -18,6 +18,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import net.moewes.cloudui.UiComponent;
 import net.moewes.cloudui.UiEvent;
+import net.moewes.cloudui.lifecycle.AfterDataBindingObserver;
 
 public class ViewRequestHandler implements Handler<RoutingContext> {
 
@@ -99,6 +100,12 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
         String result;
         UiComponent view = getView(viewClassName);
         view.setId(viewClassName);
+
+        if (view instanceof AfterDataBindingObserver) {
+            AfterDataBindingObserver afterDataBindingObserver = (AfterDataBindingObserver) view;
+            afterDataBindingObserver.afterDataBinding();
+        }
+
         view.render();
         result = Json.encode(Collections.singletonList(view.getElement()));
         return result;
@@ -136,6 +143,11 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
                         component.setValue(fields.get(id));
                         component.setValuesWithBinder();
                     });
+        }
+
+        if (viewComponent instanceof AfterDataBindingObserver) {
+            AfterDataBindingObserver afterDataBindingObserver = (AfterDataBindingObserver) viewComponent;
+            afterDataBindingObserver.afterDataBinding();
         }
 
         for (String id : events.keySet()) {
