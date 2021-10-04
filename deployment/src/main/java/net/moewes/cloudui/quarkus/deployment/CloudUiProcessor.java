@@ -25,6 +25,7 @@ import net.moewes.cloudui.quarkus.runtime.CloudUi;
 import net.moewes.cloudui.quarkus.runtime.CloudUiRecorder;
 import net.moewes.cloudui.quarkus.runtime.CloudUiRouter;
 import net.moewes.cloudui.quarkus.runtime.HtmlPageBuilder;
+import net.moewes.cloudui.quarkus.runtime.identity.IdentityProducer;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
@@ -51,7 +52,8 @@ public class CloudUiProcessor {
 
     @BuildStep
     AdditionalBeanBuildItem beans() {
-        return new AdditionalBeanBuildItem(CloudUiRouter.class, CloudUi.class, HtmlPageBuilder.class);
+        return new AdditionalBeanBuildItem(CloudUiRouter.class,
+                CloudUi.class, HtmlPageBuilder.class, IdentityProducer.class);
     }
 
     @BuildStep
@@ -65,7 +67,7 @@ public class CloudUiProcessor {
         IndexView indexView = beanArchiveIndex.getIndex();
         Collection<AnnotationInstance> cloudUiViews = indexView.getAnnotations(VIEW);
 
-        Handler<RoutingContext> pageHandler = recorder.getPageHandler();
+        Handler<RoutingContext> pageHandler = recorder.getPageHandler(beanContainer.getValue());
         Handler<RoutingContext> viewHandler = recorder.getViewHandler(beanContainer.getValue());
 
         for (AnnotationInstance annotation : cloudUiViews) {

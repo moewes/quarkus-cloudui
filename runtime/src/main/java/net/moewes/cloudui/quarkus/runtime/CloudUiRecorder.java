@@ -24,9 +24,9 @@ public class CloudUiRecorder {
         pageBuilder.setScripts(scripts);
     }
 
-    public Handler<RoutingContext> getPageHandler() {
+    public Handler<RoutingContext> getPageHandler(BeanContainer beanContainer) {
 
-        return new PageHandler();
+        return new PageHandler(beanContainer);
     }
 
     public Handler<RoutingContext> getViewHandler(BeanContainer beanContainer) {

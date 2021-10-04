@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
+import net.moewes.cloudui.quarkus.runtime.identity.Identity;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
@@ -15,7 +17,7 @@ public class HtmlPageBuilder {
 
     private List<String> scripts;
 
-    public String getPage(String view) {
+    public String getPage(String view, Identity identity) {
 
         String result = "<!doctype html>" +
                 "<html>" +
@@ -26,9 +28,9 @@ public class HtmlPageBuilder {
                 "<script src=\"" + getRootPath() + item + "\"></script>").collect(Collectors.joining());
 
         result = result + script + getBasicStyle() +
-                "</head>" +
-                "<body><cloudui-view backend=\"" + getRootPath() + "/" + view
-                + "\"></cloudui-view><body>";
+                "</head><body>"
+                + getViewContainer(view,identity)
+                + "</body></html>";
 
         return result;
     }
@@ -47,5 +49,16 @@ public class HtmlPageBuilder {
         return "<style>" +
                 "body { margin: 0; padding: 0px } " +
                 "</style>";
+    }
+
+    private String getViewContainer(String view, Identity identity) {
+
+        String result = "<cloudui-view ";
+        result = result + "backend=\"" + getRootPath() + "/" + view + "\" ";
+        if (identity.getBearer().isPresent()) {
+                            result = result + "bearer_token=\"" + identity.getBearer().get() + "\"";
+        }
+        result = result + "></cloudui-view><body>";
+        return result;
     }
 }

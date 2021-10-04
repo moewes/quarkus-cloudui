@@ -6,10 +6,14 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.CDI;
 
 import io.quarkus.arc.ManagedContext;
 import io.quarkus.arc.runtime.BeanContainer;
+import io.quarkus.security.identity.CurrentIdentityAssociation;
+import io.quarkus.security.identity.SecurityIdentity;
+import io.quarkus.vertx.http.runtime.security.QuarkusHttpUser;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -27,11 +31,14 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
     protected final BeanContainer beanContainer;
     protected final ClassLoader classLoader;
     private CloudUiRouter cloudUiRouter;
+    private CurrentIdentityAssociation association;
 
     public ViewRequestHandler(BeanContainer beanContainer, ClassLoader classLoader) {
         this.beanContainer = beanContainer;
         this.classLoader = classLoader;
         cloudUiRouter = CDI.current().select(CloudUiRouter.class).get();
+        Instance<CurrentIdentityAssociation> association = CDI.current().select(CurrentIdentityAssociation.class);
+        this.association = association.isResolvable() ? association.get() : null;
     }
 
     @Override
@@ -79,6 +86,16 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
 
         ManagedContext requestContext = beanContainer.requestContext();
         requestContext.activate();
+
+        if (association != null) {
+            QuarkusHttpUser existing = (QuarkusHttpUser) rc.user();
+            if (existing != null) {
+                SecurityIdentity identity = existing.getSecurityIdentity();
+                association.setIdentity(identity);
+            } else {
+                association.setIdentity(QuarkusHttpUser.getSecurityIdentity(rc, null));
+            }
+        }
 
         try {
             if (rc.request().method() == HttpMethod.GET) {

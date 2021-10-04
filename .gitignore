@@ -5,3 +5,4 @@
 /deployment/cloud-ui-quarkus-extension-deployment.iml
 /deployment/target/
 /.idea/
+.DS_Store
