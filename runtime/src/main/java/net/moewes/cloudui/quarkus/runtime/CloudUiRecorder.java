@@ -7,17 +7,13 @@ import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.runtime.annotations.Recorder;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
+import net.moewes.cloudui.quarkus.runtime.repository.View;
 
 @Recorder
 public class CloudUiRecorder {
 
     private static final Logger log = Logger.getLogger(CloudUiRecorder.class.getName());
-
-    public void registerView(BeanContainer beanContainer, String view, String path) {
-        CloudUiRouter router = beanContainer.instance(CloudUiRouter.class);
-        router.addView(view, path);
-    }
-
+    
     public void touch(BeanContainer beanContainer, List<String> scripts) {
         log.info("register scripts ");
         HtmlPageBuilder pageBuilder = beanContainer.instance(HtmlPageBuilder.class);
@@ -31,5 +27,10 @@ public class CloudUiRecorder {
 
     public Handler<RoutingContext> getViewHandler(BeanContainer beanContainer) {
         return new ViewRequestHandler(beanContainer, Thread.currentThread().getContextClassLoader());
+    }
+
+    public void registerView(BeanContainer beanContainer, View view) {
+        CloudUiRouter router = beanContainer.instance(CloudUiRouter.class);
+        router.addView(view);
     }
 }

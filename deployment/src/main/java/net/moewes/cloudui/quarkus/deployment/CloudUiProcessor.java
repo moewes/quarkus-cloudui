@@ -1,8 +1,10 @@
 package net.moewes.cloudui.quarkus.deployment;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.enterprise.context.RequestScoped;
@@ -11,6 +13,7 @@ import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanArchiveIndexBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.arc.deployment.BeanDefiningAnnotationBuildItem;
+import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.Record;
@@ -21,11 +24,16 @@ import io.quarkus.vertx.http.deployment.RouteBuildItem;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 import net.moewes.cloudui.annotations.CloudUiView;
+import net.moewes.cloudui.annotations.JavaScript;
+import net.moewes.cloudui.annotations.StyleSheet;
 import net.moewes.cloudui.quarkus.runtime.CloudUi;
 import net.moewes.cloudui.quarkus.runtime.CloudUiRecorder;
 import net.moewes.cloudui.quarkus.runtime.CloudUiRouter;
 import net.moewes.cloudui.quarkus.runtime.HtmlPageBuilder;
 import net.moewes.cloudui.quarkus.runtime.identity.IdentityProducer;
+import net.moewes.cloudui.quarkus.runtime.repository.Script;
+import net.moewes.cloudui.quarkus.runtime.repository.Style;
+import net.moewes.cloudui.quarkus.runtime.repository.View;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
@@ -39,6 +47,8 @@ public class CloudUiProcessor {
     private static final Logger log = Logger.getLogger(CloudUiProcessor.class);
     static private final DotName VIEW = DotName.createSimple(CloudUiView.class.getName());
     static private final DotName REQUEST_SCOPED = DotName.createSimple(RequestScoped.class.getName());
+    static private final DotName JAVASCRIPT = DotName.createSimple(JavaScript.class.getName());
+    static private final DotName STYLESHEET = DotName.createSimple(StyleSheet.class.getName());
 
     @BuildStep
     FeatureBuildItem featureBuildItem() {
@@ -57,6 +67,14 @@ public class CloudUiProcessor {
     }
 
     @BuildStep
+    UnremovableBeanBuildItem unremovableBeans() {
+        return UnremovableBeanBuildItem.beanTypes(
+                CloudUiRouter.class,
+                HtmlPageBuilder.class,
+                IdentityProducer.class);
+    }
+
+    @BuildStep
     @Record(STATIC_INIT)
     void scanForViews(CloudUiRecorder recorder,
                       BeanArchiveIndexBuildItem beanArchiveIndex,
@@ -71,13 +89,34 @@ public class CloudUiProcessor {
         Handler<RoutingContext> viewHandler = recorder.getViewHandler(beanContainer.getValue());
 
         for (AnnotationInstance annotation : cloudUiViews) {
-            String view = annotation.target().toString();
+            String viewname = annotation.target().toString();
             String path = annotation.value().asString();
-            
-            recorder.registerView(beanContainer.getValue(), view, path);
+
+            Set<Script> scripts = new HashSet<>();
+            for (AnnotationInstance javascript : annotation.target().asClass().classAnnotationsWithRepeatable(JAVASCRIPT, indexView)) {
+                Script script = new Script();
+                script.setUrl(javascript.value().asString());
+                script.setId(javascript.value("id").asString());
+                scripts.add(script);
+            }
+
+            Set<Style> styles = new HashSet<>();
+            for (AnnotationInstance stylesheet : annotation.target().asClass().classAnnotationsWithRepeatable(STYLESHEET, indexView)) {
+                Style style = new Style();
+                style.setUrl(stylesheet.value().asString());
+                styles.add(style);
+            }
+
+            View view = new View();
+            view.setView(viewname);
+            view.setPath(path);
+            view.setScripts(scripts);
+            view.setStyles(styles);
+
+            recorder.registerView(beanContainer.getValue(), view);
 
             routes.produce(RouteBuildItem.builder().route(path).handler(pageHandler).build());
-            routes.produce(RouteBuildItem.builder().route("/" + view).handler(viewHandler).build());
+            routes.produce(RouteBuildItem.builder().route("/" + viewname).handler(viewHandler).build());
         }
     }
 

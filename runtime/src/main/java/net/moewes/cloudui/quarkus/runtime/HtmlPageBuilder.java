@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 
 import net.moewes.cloudui.quarkus.runtime.identity.Identity;
+import net.moewes.cloudui.quarkus.runtime.repository.View;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
@@ -17,19 +17,26 @@ public class HtmlPageBuilder {
 
     private List<String> scripts;
 
-    public String getPage(String view, Identity identity) {
+    public String getPage(View view, Identity identity) {
 
         String result = "<!doctype html>" +
                 "<html>" +
                 "<head>" +
                 "<meta charset=\"utf-8\">" +
                 "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
-        String script = scripts.stream().map(item ->
+
+        String globalScripts = scripts.stream().map(item ->
                 "<script src=\"" + getRootPath() + item + "\"></script>").collect(Collectors.joining());
 
-        result = result + script + getBasicStyle() +
+        String viewScripts = view.getScripts().stream().map(item ->
+                "<script src=\"" + item.getUrl() + "\" id=\"" + item.getId() + "\" ></script>").collect(Collectors.joining());
+
+        String viewStyles = view.getStyles().stream().map(item ->
+                "<link rel=\"stylesheet\" href=\"" + item.getUrl() + "\"></script>").collect(Collectors.joining());
+
+        result = result + globalScripts + viewScripts + getBasicStyle() + viewStyles +
                 "</head><body>"
-                + getViewContainer(view,identity)
+                + getViewContainer(view.getView(), identity)
                 + "</body></html>";
 
         return result;
@@ -56,7 +63,7 @@ public class HtmlPageBuilder {
         String result = "<cloudui-view ";
         result = result + "backend=\"" + getRootPath() + "/" + view + "\" ";
         if (identity.getBearer().isPresent()) {
-                            result = result + "bearer_token=\"" + identity.getBearer().get() + "\"";
+            result = result + "bearer_token=\"" + identity.getBearer().get() + "\"";
         }
         result = result + "></cloudui-view><body>";
         return result;

@@ -13,7 +13,7 @@ import io.quarkus.vertx.http.runtime.security.QuarkusHttpUser;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.RoutingContext;
-import net.moewes.cloudui.quarkus.runtime.identity.Identity;
+import net.moewes.cloudui.quarkus.runtime.identity.DefaultIdentity;
 
 public class PageHandler implements Handler<RoutingContext> {
     private static final Logger log = Logger.getLogger(PageHandler.class.getName());
@@ -62,8 +62,8 @@ public class PageHandler implements Handler<RoutingContext> {
             }
         }
 
-        Identity identity = CDI.current().select(Identity.class).get();
-        String result = pageBuilder.getPage(cloudUiRouter.getViewFromPath(path), identity);
+        // Identity identity = CDI.current().select(Identity.class).get(); // TODO
+        String result = pageBuilder.getPage(cloudUiRouter.getViewFromPath(path), new DefaultIdentity());
         requestContext.terminate();
         return result;
     }
