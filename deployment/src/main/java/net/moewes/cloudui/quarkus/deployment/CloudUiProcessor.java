@@ -71,7 +71,8 @@ public class CloudUiProcessor {
         return UnremovableBeanBuildItem.beanTypes(
                 CloudUiRouter.class,
                 HtmlPageBuilder.class,
-                IdentityProducer.class);
+                IdentityProducer.class,
+                CloudUi.class);
     }
 
     @BuildStep
