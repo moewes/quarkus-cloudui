@@ -30,8 +30,8 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
 
     protected final BeanContainer beanContainer;
     protected final ClassLoader classLoader;
-    private CloudUiRouter cloudUiRouter;
-    private CurrentIdentityAssociation association;
+    private final CloudUiRouter cloudUiRouter;
+    private final CurrentIdentityAssociation association;
 
     public ViewRequestHandler(BeanContainer beanContainer, ClassLoader classLoader) {
         this.beanContainer = beanContainer;
@@ -58,9 +58,7 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
             vertx.executeBlocking(promise -> {
                 String result = dispatch(routingContext, null, view);
                 promise.complete(result);
-            }, asyncResult -> {
-                routingContext.response().end((String) asyncResult.result());
-            });
+            }, asyncResult -> routingContext.response().end((String) asyncResult.result()));
         } else if (routingContext.request().method() == HttpMethod.POST) {
             routingContext.request().bodyHandler(buffer -> {
                 final JsonObject body = buffer.toJsonObject();
@@ -70,9 +68,7 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
                 vertx.executeBlocking(promise -> {
                     String result = dispatch(routingContext, body, view);
                     promise.complete(result);
-                }, asyncResult -> {
-                    routingContext.response().end((String) asyncResult.result());
-                });
+                }, asyncResult -> routingContext.response().end((String) asyncResult.result()));
             });
         } else {
             routingContext.fail(405);

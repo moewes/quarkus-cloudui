@@ -4,7 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>net.moewes</groupId>
     <artifactId>cloud-ui-quarkus-extension-deployment</artifactId>
 
     <parent>
@@ -38,6 +37,11 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-webjars-locator-deployment</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>webjars-locator-core</artifactId>
+            <version>0.50</version>
         </dependency>
         <dependency>
             <groupId>net.moewes</groupId>
