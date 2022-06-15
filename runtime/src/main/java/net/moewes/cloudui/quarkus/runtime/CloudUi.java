@@ -34,7 +34,7 @@ public class CloudUi {
                 AfterDataBindingObserver afterDataBindingObserver = (AfterDataBindingObserver) uiComponent;
                 afterDataBindingObserver.afterDataBinding();
             }
-            return Optional.ofNullable(uiComponent);
+            return Optional.of(uiComponent);
         }
         return Optional.empty();
     }

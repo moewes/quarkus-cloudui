@@ -7,6 +7,6 @@ import lombok.Value;
 @Builder
 public class ViewInfo {
 
-    private String path;
-    private String view;
+    String path;
+    String view;
 }

@@ -18,9 +18,9 @@ import net.moewes.cloudui.quarkus.runtime.identity.DefaultIdentity;
 public class PageHandler implements Handler<RoutingContext> {
     private static final Logger log = Logger.getLogger(PageHandler.class.getName());
     protected final BeanContainer beanContainer;
-    private CurrentIdentityAssociation association;
-    private HtmlPageBuilder pageBuilder;
-    private CloudUiRouter cloudUiRouter;
+    private final CurrentIdentityAssociation association;
+    private final HtmlPageBuilder pageBuilder;
+    private final CloudUiRouter cloudUiRouter;
 
     public PageHandler(BeanContainer beanContainer) {
         this.beanContainer = beanContainer;
@@ -39,9 +39,7 @@ public class PageHandler implements Handler<RoutingContext> {
         vertx.executeBlocking(promise -> {
             String result = dispatch(routingContext);
             promise.complete(result);
-        }, asyncResult -> {
-            routingContext.response().end((String) asyncResult.result());
-        });
+        }, asyncResult -> routingContext.response().end((String) asyncResult.result()));
     }
 
     private String dispatch(RoutingContext routingContext) {

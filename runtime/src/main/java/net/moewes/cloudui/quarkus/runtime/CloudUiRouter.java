@@ -27,9 +27,7 @@ public class CloudUiRouter {
     public List<ViewInfo> getAllViews() {
         ArrayList<ViewInfo> result = new ArrayList<>();
 
-        views.forEach((path, view) -> {
-            result.add(ViewInfo.builder().view(view.getView()).path(path).build());
-        });
+        views.forEach((path, view) -> result.add(ViewInfo.builder().view(view.getView()).path(path).build()));
         return result;
     }
 
