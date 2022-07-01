@@ -44,35 +44,35 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
     @Override
     public void handle(RoutingContext routingContext) {
 
-        int i = 1;
-        if (!"/".equals(cloudUiRouter.getRootPath())) {
-            i = cloudUiRouter.getRootPath().length() + 1;
-        }
+        String viewname = getViewname(routingContext);
 
-        String view = routingContext.request().path().substring(i);
-        log.info("view " + view);
-
+        Vertx vertx = routingContext.vertx();
         if (routingContext.request().method() == HttpMethod.GET) {
-            Vertx vertx = routingContext.vertx();
-
             vertx.executeBlocking(promise -> {
-                String result = dispatch(routingContext, null, view);
+                String result = dispatch(routingContext, null, viewname);
                 promise.complete(result);
             }, asyncResult -> routingContext.response().end((String) asyncResult.result()));
         } else if (routingContext.request().method() == HttpMethod.POST) {
             routingContext.request().bodyHandler(buffer -> {
                 final JsonObject body = buffer.toJsonObject();
-
-                Vertx vertx = routingContext.vertx();
-
                 vertx.executeBlocking(promise -> {
-                    String result = dispatch(routingContext, body, view);
+                    String result = dispatch(routingContext, body, viewname);
                     promise.complete(result);
                 }, asyncResult -> routingContext.response().end((String) asyncResult.result()));
             });
         } else {
             routingContext.fail(405);
         }
+    }
+
+    private String getViewname(RoutingContext routingContext) {
+        int i = 1;
+        if (!"/".equals(cloudUiRouter.getRootPath())) {
+            i = cloudUiRouter.getRootPath().length() + 1;
+        }
+
+        String view = routingContext.request().path().substring(i);
+        return view;
     }
 
     private String dispatch(RoutingContext rc, JsonObject json,
@@ -183,7 +183,6 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-        Object instance = beanContainer.instance(viewClass);
         return (UiComponent) CDI.current().select(viewClass, Default.Literal.INSTANCE).get();
     }
 }
