@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.enterprise.context.ApplicationScoped;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import net.moewes.cloudui.quarkus.runtime.dev.ViewInfo;
 import net.moewes.cloudui.quarkus.runtime.repository.View;
 import org.eclipse.microprofile.config.inject.ConfigProperty;

@@ -2,8 +2,7 @@ package net.moewes.cloudui.quarkus.runtime;
 
 import java.util.logging.Logger;
 
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.CDI;
+
 
 import io.quarkus.arc.ManagedContext;
 import io.quarkus.arc.runtime.BeanContainer;
@@ -13,6 +12,8 @@ import io.quarkus.vertx.http.runtime.security.QuarkusHttpUser;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.RoutingContext;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.spi.CDI;
 import net.moewes.cloudui.quarkus.runtime.identity.DefaultIdentity;
 
 public class PageHandler implements Handler<RoutingContext> {

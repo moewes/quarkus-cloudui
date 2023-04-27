@@ -1,9 +1,10 @@
 package net.moewes.cloudui.quarkus.runtime.identity;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Produces;
+
 
 import io.quarkus.arc.DefaultBean;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Produces;
 
 @Dependent
 public class IdentityProducer {

@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.enterprise.context.RequestScoped;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanArchiveIndexBuildItem;
@@ -23,6 +22,7 @@ import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.vertx.http.deployment.RouteBuildItem;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
+import jakarta.enterprise.context.RequestScoped;
 import net.moewes.cloudui.annotations.CloudUiView;
 import net.moewes.cloudui.annotations.JavaScript;
 import net.moewes.cloudui.annotations.StyleSheet;
@@ -94,7 +94,9 @@ public class CloudUiProcessor {
             String path = annotation.value().asString();
 
             Set<Script> scripts = new HashSet<>();
-            for (AnnotationInstance javascript : annotation.target().asClass().classAnnotationsWithRepeatable(JAVASCRIPT, indexView)) {
+            for (AnnotationInstance javascript : annotation.target()
+                    .asClass()
+                    .declaredAnnotationsWithRepeatable(JAVASCRIPT, indexView)) {
                 Script script = new Script();
                 script.setUrl(javascript.value().asString());
                 script.setId(javascript.value("id").asString());
@@ -102,7 +104,9 @@ public class CloudUiProcessor {
             }
 
             Set<Style> styles = new HashSet<>();
-            for (AnnotationInstance stylesheet : annotation.target().asClass().classAnnotationsWithRepeatable(STYLESHEET, indexView)) {
+            for (AnnotationInstance stylesheet : annotation.target()
+                    .asClass()
+                    .declaredAnnotationsWithRepeatable(STYLESHEET, indexView)) {
                 Style style = new Style();
                 style.setUrl(stylesheet.value().asString());
                 styles.add(style);
@@ -141,7 +145,7 @@ public class CloudUiProcessor {
 
     @BuildStep
     ReflectiveClassBuildItem reflection() {
-        return new ReflectiveClassBuildItem(true, true,
-                "net.moewes.cloudui.UiElement", "net.moewes.cloudui.UiElementAttribute");
+        return ReflectiveClassBuildItem.builder("net.moewes.cloudui.UiElement", "net.moewes" +
+                ".cloudui.UiElementAttribute").methods(true).fields(true).build();
     }
 }
