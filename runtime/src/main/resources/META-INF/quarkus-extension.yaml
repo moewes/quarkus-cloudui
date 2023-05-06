@@ -1,7 +1,8 @@
 ---
 name: "CloudUi"
+artifact: ${project.groupId}:${project.artifactId}:${project.version}
 metadata:
-  short-name: "webjars-locator"
+  short-name: "CloudUi"
   keywords:
     - "CloudUi"
     - "UI"

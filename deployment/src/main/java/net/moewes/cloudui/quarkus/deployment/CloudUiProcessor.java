@@ -1,18 +1,6 @@
 package net.moewes.cloudui.quarkus.deployment;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-
-import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
-import io.quarkus.arc.deployment.BeanArchiveIndexBuildItem;
-import io.quarkus.arc.deployment.BeanContainerBuildItem;
-import io.quarkus.arc.deployment.BeanDefiningAnnotationBuildItem;
-import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
+import io.quarkus.arc.deployment.*;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.Record;
@@ -40,13 +28,17 @@ import org.jboss.jandex.IndexView;
 import org.jboss.logging.Logger;
 import org.webjars.WebJarAssetLocator;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 import static io.quarkus.deployment.annotations.ExecutionTime.STATIC_INIT;
 
 public class CloudUiProcessor {
 
     private static final Logger log = Logger.getLogger(CloudUiProcessor.class);
     static private final DotName VIEW = DotName.createSimple(CloudUiView.class.getName());
-    static private final DotName REQUEST_SCOPED = DotName.createSimple(RequestScoped.class.getName());
+    static private final DotName REQUEST_SCOPED =
+            DotName.createSimple(RequestScoped.class.getName());
     static private final DotName JAVASCRIPT = DotName.createSimple(JavaScript.class.getName());
     static private final DotName STYLESHEET = DotName.createSimple(StyleSheet.class.getName());
 
@@ -73,6 +65,21 @@ public class CloudUiProcessor {
                 HtmlPageBuilder.class,
                 IdentityProducer.class,
                 CloudUi.class);
+    }
+
+    @BuildStep
+    void scanForEntities(BeanArchiveIndexBuildItem beanArchiveIndex,
+                         BuildProducer<ViewBuildItem> buildProducer) {
+
+        IndexView indexView = beanArchiveIndex.getIndex();
+        Collection<AnnotationInstance> cloudUiViews = indexView.getAnnotations(VIEW);
+
+        cloudUiViews.forEach(annotationInstance -> {
+            String viewname = annotationInstance.target().toString();
+            String path = annotationInstance.value().asString();
+
+            buildProducer.produce(new ViewBuildItem(viewname, path));
+        });
     }
 
     @BuildStep
@@ -121,7 +128,10 @@ public class CloudUiProcessor {
             recorder.registerView(beanContainer.getValue(), view);
 
             routes.produce(RouteBuildItem.builder().route(path).handler(pageHandler).build());
-            routes.produce(RouteBuildItem.builder().route("/" + viewname).handler(viewHandler).build());
+            routes.produce(RouteBuildItem.builder()
+                    .route("/" + viewname)
+                    .handler(viewHandler)
+                    .build());
         }
     }
 
@@ -136,9 +146,10 @@ public class CloudUiProcessor {
         webjarNameToVersionMap.keySet()
                 .forEach(item -> log.info(item + " " + webjarNameToVersionMap.get(item)));
 
-        List<String> scripts = webJarLocator.listAssets().stream().filter(item -> item.endsWith(".js"))
-                .map(item -> item.replace("META-INF/resources", ""))
-                .collect(Collectors.toList());
+        List<String> scripts =
+                webJarLocator.listAssets().stream().filter(item -> item.endsWith(".js"))
+                        .map(item -> item.replace("META-INF/resources", ""))
+                        .collect(Collectors.toList());
 
         recorder.touch(beanContainer.getValue(), scripts);
     }
