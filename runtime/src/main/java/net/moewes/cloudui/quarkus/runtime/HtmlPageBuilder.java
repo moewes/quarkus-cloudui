@@ -3,8 +3,8 @@ package net.moewes.cloudui.quarkus.runtime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.enterprise.context.ApplicationScoped;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import net.moewes.cloudui.quarkus.runtime.identity.Identity;
 import net.moewes.cloudui.quarkus.runtime.repository.View;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
