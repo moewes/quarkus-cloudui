@@ -1,12 +1,5 @@
 package net.moewes.cloudui.quarkus.runtime;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
-
-
-
 import io.quarkus.arc.ManagedContext;
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.security.identity.CurrentIdentityAssociation;
@@ -25,6 +18,10 @@ import net.moewes.cloudui.UiComponent;
 import net.moewes.cloudui.UiEvent;
 import net.moewes.cloudui.lifecycle.AfterDataBindingObserver;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+
 public class ViewRequestHandler implements Handler<RoutingContext> {
 
     private static final Logger log = Logger.getLogger("net.moewes.cloudui");
@@ -38,7 +35,8 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
         this.beanContainer = beanContainer;
         this.classLoader = classLoader;
         cloudUiRouter = CDI.current().select(CloudUiRouter.class).get();
-        Instance<CurrentIdentityAssociation> association = CDI.current().select(CurrentIdentityAssociation.class);
+        Instance<CurrentIdentityAssociation> association =
+                CDI.current().select(CurrentIdentityAssociation.class);
         this.association = association.isResolvable() ? association.get() : null;
     }
 
@@ -112,6 +110,7 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
 
     private String getViewContent(String viewClassName) {
         String result;
+        CloudUi ui = CDI.current().select(CloudUi.class).get();
         UiComponent view = getView(viewClassName);
         view.setId(viewClassName);
 
@@ -121,7 +120,9 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
         }
 
         view.render();
-        result = Json.encode(Collections.singletonList(view.getElement()));
+        ViewResponse viewResponse = ui.getViewResponse();
+        viewResponse.setView(view.getElement());
+        result = Json.encode(viewResponse);
         return result;
     }
 
@@ -160,7 +161,8 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
         }
 
         if (viewComponent instanceof AfterDataBindingObserver) {
-            AfterDataBindingObserver afterDataBindingObserver = (AfterDataBindingObserver) viewComponent;
+            AfterDataBindingObserver afterDataBindingObserver =
+                    (AfterDataBindingObserver) viewComponent;
             afterDataBindingObserver.afterDataBinding();
         }
 
@@ -171,8 +173,10 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
         String result;
         CloudUi ui = CDI.current().select(CloudUi.class).get();
         UiComponent view = ui.getNextView().orElse(viewComponent);
+        ViewResponse viewResponse = ui.getViewResponse();
         view.render();
-        result = Json.encode(Collections.singletonList(view.getElement()));
+        viewResponse.setView(view.getElement());
+        result = Json.encode(viewResponse);
         return result;
     }
 

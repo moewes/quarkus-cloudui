@@ -103,12 +103,12 @@
         <dependency>
             <artifactId>cloud-ui-client</artifactId>
             <groupId>net.moewes.cloud-ui</groupId>
-            <version>0.3.0</version>
+            <version>0.4.0</version>
         </dependency>
         <dependency>
             <artifactId>cloud-ui-core</artifactId>
             <groupId>net.moewes</groupId>
-            <version>0.3.0</version>
+            <version>0.4.0</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
