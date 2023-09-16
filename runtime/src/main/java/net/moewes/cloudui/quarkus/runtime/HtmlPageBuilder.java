@@ -27,7 +27,7 @@ public class HtmlPageBuilder {
 
         String globalScripts = scripts.stream()
                 .map(item ->
-                        "<script src=\"" + getRootPath() + item + "\"></script>")
+                        "<script src=\"" + getRootPath() + item + "\" type=\"module\"></script>")
                 .collect(Collectors.joining());
 
         String viewScripts = view.getScripts()
