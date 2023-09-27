@@ -1,8 +1,4 @@
-/cloud-ui-quarkus.iml
-/runtime/cloud-ui-quarkus-extension.iml
-/runtime/target/
-/target/
-/deployment/cloud-ui-quarkus-extension-deployment.iml
-/deployment/target/
 /.idea/
 .DS_Store
+*.iml
+*/target/
