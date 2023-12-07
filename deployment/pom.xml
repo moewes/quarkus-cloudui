@@ -9,7 +9,7 @@
     <parent>
         <artifactId>cloud-ui-quarkus</artifactId>
         <groupId>net.moewes</groupId>
-        <version>0.4.3</version>
+        <version>0.4.4-SNAPSHOT</version>
     </parent>
 
     <properties>
