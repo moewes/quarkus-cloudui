@@ -36,9 +36,13 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
     private final CloudUiRouter cloudUiRouter;
     private final CurrentIdentityAssociation association;
 
-    public ViewRequestHandler(BeanContainer beanContainer, ClassLoader classLoader) {
+    private final long readTimeout;
+
+    public ViewRequestHandler(BeanContainer beanContainer, ClassLoader classLoader,
+                              long readTimeout) {
         this.beanContainer = beanContainer;
         this.classLoader = classLoader;
+        this.readTimeout = readTimeout;
         cloudUiRouter = CDI.current().select(CloudUiRouter.class).get();
         Instance<CurrentIdentityAssociation> association =
                 CDI.current().select(CurrentIdentityAssociation.class);
@@ -48,12 +52,12 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
     @Override
     public void handle(RoutingContext routingContext) {
 
-        String viewname = getViewname(routingContext);
+        String viewName = getViewName(routingContext);
 
         Vertx vertx = routingContext.vertx();
         if (routingContext.request().method() == HttpMethod.GET) {
             vertx.executeBlocking(promise -> {
-                String result = dispatch(routingContext, null, viewname);
+                String result = dispatch(routingContext, null, viewName);
                 promise.complete(result);
             }, asyncResult -> routingContext.response().end((String) asyncResult.result()));
         } else if (routingContext.request().method() == HttpMethod.POST) {
@@ -61,7 +65,6 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
             if (routingContext.getBody() != null) {
                 is = new ByteArrayInputStream(routingContext.getBody().getBytes());
             } else {
-                long readTimeout = 1000000L; // FIXME
                 is = new VertxInputStream(routingContext, readTimeout);
             }
             vertx.executeBlocking(promise -> {
@@ -69,12 +72,13 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
                 Buffer buffer;
                 try {
                     buffer = Buffer.buffer(is.readAllBytes());
+                    is.close();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
                 final JsonObject body = buffer.toJsonObject();
 
-                String result = dispatch(routingContext, body, viewname);
+                String result = dispatch(routingContext, body, viewName);
                 promise.complete(result);
 
             }, asyncResult -> routingContext.response().end((String) asyncResult.result()));
@@ -85,14 +89,13 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
         }
     }
 
-    private String getViewname(RoutingContext routingContext) {
+    private String getViewName(RoutingContext routingContext) {
         int i = 1;
         if (!"/".equals(cloudUiRouter.getRootPath())) {
             i = cloudUiRouter.getRootPath().length() + 1;
         }
 
-        String view = routingContext.request().path().substring(i);
-        return view;
+        return routingContext.request().path().substring(i);
     }
 
     private String dispatch(RoutingContext rc, JsonObject json,
@@ -122,7 +125,8 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
                 rc.fail(405);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.info(e.getLocalizedMessage());
+            rc.fail(500);
         }
 
         requestContext.terminate();
@@ -135,8 +139,7 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
         UiComponent view = getView(viewClassName);
         view.setId(viewClassName);
 
-        if (view instanceof AfterDataBindingObserver) {
-            AfterDataBindingObserver afterDataBindingObserver = (AfterDataBindingObserver) view;
+        if (view instanceof AfterDataBindingObserver afterDataBindingObserver) {
             afterDataBindingObserver.afterDataBinding();
         }
 
@@ -155,7 +158,7 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
         UiComponent viewComponent = getView(viewClassName);
         viewComponent.setId(viewClassName);
 
-        String eventname = json.getString("event");
+        String eventName = json.getString("event");
         String eventSource = json.getString("id");
         Map<String, Object> eventMap;
         try {
@@ -163,7 +166,7 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
         } catch (java.lang.ClassCastException e) {
             eventMap = new HashMap<>();
         }
-        events.put(eventSource, new UiEvent(eventname, eventMap));
+        events.put(eventSource, new UiEvent(eventName, eventMap));
 
         json.getJsonArray("fields").forEach(item -> {
             JsonObject fieldObject = (JsonObject) item;
@@ -181,9 +184,7 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
                     });
         }
 
-        if (viewComponent instanceof AfterDataBindingObserver) {
-            AfterDataBindingObserver afterDataBindingObserver =
-                    (AfterDataBindingObserver) viewComponent;
+        if (viewComponent instanceof AfterDataBindingObserver afterDataBindingObserver) {
             afterDataBindingObserver.afterDataBinding();
         }
 
@@ -207,7 +208,7 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
         try {
             viewClass = Class.forName(viewClassName, true, classLoader);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            log.info("view class " + viewClassName + " cannot be found");
         }
         return (UiComponent) CDI.current().select(viewClass, Default.Literal.INSTANCE).get();
     }

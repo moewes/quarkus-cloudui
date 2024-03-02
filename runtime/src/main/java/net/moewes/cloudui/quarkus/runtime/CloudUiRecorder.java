@@ -1,7 +1,9 @@
 package net.moewes.cloudui.quarkus.runtime;
 
 import io.quarkus.arc.runtime.BeanContainer;
+import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.annotations.Recorder;
+import io.quarkus.vertx.http.runtime.HttpConfiguration;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 import net.moewes.cloudui.quarkus.runtime.repository.View;
@@ -13,6 +15,12 @@ import java.util.logging.Logger;
 public class CloudUiRecorder {
 
     private static final Logger log = Logger.getLogger(CloudUiRecorder.class.getName());
+
+    final RuntimeValue<HttpConfiguration> readTimeout;
+
+    public CloudUiRecorder(RuntimeValue<HttpConfiguration> readTimeout) {
+        this.readTimeout = readTimeout;
+    }
 
     public void touch(BeanContainer beanContainer, List<String> scripts) {
         log.info("register scripts ");
@@ -27,7 +35,8 @@ public class CloudUiRecorder {
 
     public Handler<RoutingContext> getViewHandler(BeanContainer beanContainer) {
         return new ViewRequestHandler(beanContainer,
-                Thread.currentThread().getContextClassLoader());
+                Thread.currentThread().getContextClassLoader(),
+                readTimeout.getValue().readTimeout.toMillis());
     }
 
     public void registerView(BeanContainer beanContainer, View view) {

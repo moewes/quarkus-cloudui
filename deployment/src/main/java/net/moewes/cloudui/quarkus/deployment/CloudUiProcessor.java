@@ -31,6 +31,7 @@ import org.webjars.WebJarAssetLocator;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static io.quarkus.deployment.annotations.ExecutionTime.RUNTIME_INIT;
 import static io.quarkus.deployment.annotations.ExecutionTime.STATIC_INIT;
 
 public class CloudUiProcessor {
@@ -68,36 +69,18 @@ public class CloudUiProcessor {
     }
 
     @BuildStep
-    void scanForEntities(BeanArchiveIndexBuildItem beanArchiveIndex,
-                         BuildProducer<ViewBuildItem> buildProducer) {
-
-        IndexView indexView = beanArchiveIndex.getIndex();
-        Collection<AnnotationInstance> cloudUiViews = indexView.getAnnotations(VIEW);
-
-        cloudUiViews.forEach(annotationInstance -> {
-            String viewname = annotationInstance.target().toString();
-            String path = annotationInstance.value().asString();
-
-            buildProducer.produce(new ViewBuildItem(viewname, path));
-        });
-    }
-
-    @BuildStep
     @Record(STATIC_INIT)
     void scanForViews(CloudUiRecorder recorder,
                       BeanArchiveIndexBuildItem beanArchiveIndex,
                       BeanContainerBuildItem beanContainer,
                       BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
-                      BuildProducer<RouteBuildItem> routes) {
+                      BuildProducer<ViewBuildItem> views) {
 
         IndexView indexView = beanArchiveIndex.getIndex();
         Collection<AnnotationInstance> cloudUiViews = indexView.getAnnotations(VIEW);
 
-        Handler<RoutingContext> pageHandler = recorder.getPageHandler(beanContainer.getValue());
-        Handler<RoutingContext> viewHandler = recorder.getViewHandler(beanContainer.getValue());
-
         for (AnnotationInstance annotation : cloudUiViews) {
-            String viewname = annotation.target().toString();
+            String viewName = annotation.target().toString();
             String path = annotation.value().asString();
 
             Set<Script> scripts = new HashSet<>();
@@ -120,19 +103,50 @@ public class CloudUiProcessor {
             }
 
             View view = new View();
-            view.setView(viewname);
+            view.setView(viewName);
             view.setPath(path);
             view.setScripts(scripts);
             view.setStyles(styles);
 
             recorder.registerView(beanContainer.getValue(), view);
 
-            routes.produce(RouteBuildItem.builder().route(path).handler(pageHandler).build());
+            views.produce(new ViewBuildItem(viewName, path));
+        }
+    }
+
+    @BuildStep
+    @Record(RUNTIME_INIT)
+    void createViewHandler(CloudUiRecorder recorder,
+                           BeanContainerBuildItem beanContainer,
+                           BuildProducer<RouteBuildItem> routes,
+                           List<ViewBuildItem> viewBuildItems) {
+
+        viewBuildItems.forEach(viewBuildItem -> {
+
+            Handler<RoutingContext> viewHandler = recorder.getViewHandler(beanContainer.getValue());
             routes.produce(RouteBuildItem.builder()
-                    .route("/" + viewname)
+                    .route("/" + viewBuildItem.name)
                     .handler(viewHandler)
                     .build());
-        }
+        });
+    }
+
+    @BuildStep
+    @Record(RUNTIME_INIT)
+    void createPageHandler(CloudUiRecorder recorder,
+                           BeanContainerBuildItem beanContainer,
+                           BuildProducer<RouteBuildItem> routes,
+                           List<ViewBuildItem> viewBuildItems) {
+
+        viewBuildItems.forEach(viewBuildItem -> {
+
+            Handler<RoutingContext> pageHandler = recorder.getPageHandler(beanContainer.getValue());
+
+            routes.produce(RouteBuildItem.builder()
+                    .route(viewBuildItem.path)
+                    .handler(pageHandler)
+                    .build());
+        });
     }
 
     @BuildStep
