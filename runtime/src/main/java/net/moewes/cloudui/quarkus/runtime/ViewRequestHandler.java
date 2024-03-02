@@ -4,9 +4,11 @@ import io.quarkus.arc.ManagedContext;
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.security.identity.CurrentIdentityAssociation;
 import io.quarkus.security.identity.SecurityIdentity;
+import io.quarkus.vertx.http.runtime.VertxInputStream;
 import io.quarkus.vertx.http.runtime.security.QuarkusHttpUser;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
@@ -18,6 +20,9 @@ import net.moewes.cloudui.UiComponent;
 import net.moewes.cloudui.UiEvent;
 import net.moewes.cloudui.lifecycle.AfterDataBindingObserver;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -52,13 +57,29 @@ public class ViewRequestHandler implements Handler<RoutingContext> {
                 promise.complete(result);
             }, asyncResult -> routingContext.response().end((String) asyncResult.result()));
         } else if (routingContext.request().method() == HttpMethod.POST) {
-            routingContext.request().bodyHandler(buffer -> {
+            InputStream is;
+            if (routingContext.getBody() != null) {
+                is = new ByteArrayInputStream(routingContext.getBody().getBytes());
+            } else {
+                long readTimeout = 1000000L; // FIXME
+                is = new VertxInputStream(routingContext, readTimeout);
+            }
+            vertx.executeBlocking(promise -> {
+
+                Buffer buffer;
+                try {
+                    buffer = Buffer.buffer(is.readAllBytes());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
                 final JsonObject body = buffer.toJsonObject();
-                vertx.executeBlocking(promise -> {
-                    String result = dispatch(routingContext, body, viewname);
-                    promise.complete(result);
-                }, asyncResult -> routingContext.response().end((String) asyncResult.result()));
-            });
+
+                String result = dispatch(routingContext, body, viewname);
+                promise.complete(result);
+
+            }, asyncResult -> routingContext.response().end((String) asyncResult.result()));
+
+
         } else {
             routingContext.fail(405);
         }
