@@ -97,9 +97,9 @@
             <artifactId>quarkus-webjars-locator</artifactId>
         </dependency>
         <dependency>
-            <artifactId>cloud-ui-client</artifactId>
-            <groupId>net.moewes.cloud-ui</groupId>
-            <version>0.4.5-SNAPSHOT</version>
+            <artifactId>cloudui-client</artifactId>
+            <groupId>net.moewes</groupId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <artifactId>cloud-ui-core</artifactId>
