@@ -12,30 +12,7 @@
         <groupId>net.moewes</groupId>
         <version>0.5.2-SNAPSHOT</version>
     </parent>
-
-    <properties>
-        <lombok.version>1.18.32</lombok.version>
-    </properties>
-
-    <repositories>
-        <repository>
-            <id>github_cloud_ui_client</id>
-            <name>GitHub OWNER Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/moewes/cloud-ui-client</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>github_cloud_ui_core</id>
-            <name>GitHub OWNER Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/moewes/cloud-ui-core</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
+    
     <build>
         <plugins>
             <plugin>
