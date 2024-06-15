@@ -58,7 +58,7 @@
                     <pushRemote>true</pushRemote>
                     <versionDigitToIncrement>2</versionDigitToIncrement>
                     <gitFlowConfig>
-                        <developmentBranch>master</developmentBranch>
+                        <developmentBranch>main</developmentBranch>
                     </gitFlowConfig>
                 </configuration>
             </plugin>
