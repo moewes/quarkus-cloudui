@@ -9,9 +9,9 @@
     <parent>
         <artifactId>cloud-ui-quarkus</artifactId>
         <groupId>net.moewes</groupId>
-        <version>0.5.5-SNAPSHOT</version>
+        <version>0.5.5</version>
     </parent>
-    
+
     <dependencies>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -32,12 +32,12 @@
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-webjars-locator-deployment</artifactId>
+            <artifactId>quarkus-web-dependency-locator-deployment</artifactId>
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>webjars-locator-core</artifactId>
-            <version>0.58</version>
+            <version>0.59</version>
         </dependency>
         <dependency>
             <groupId>net.moewes</groupId>

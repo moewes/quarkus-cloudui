@@ -6,7 +6,7 @@
     <parent>
         <groupId>net.moewes</groupId>
         <artifactId>cloud-ui-quarkus</artifactId>
-        <version>0.5.5-SNAPSHOT</version>
+        <version>0.5.5</version>
     </parent>
 
     <artifactId>cloudui-client</artifactId>
@@ -44,8 +44,8 @@
                         </goals>
                         <configuration>
                             <!-- See https://nodejs.org/en/download/ for latest node and npm (lts) versions -->
-                            <nodeVersion>v17.0.1</nodeVersion>
-                            <npmVersion>8.1.2</npmVersion>
+                            <nodeVersion>v18.16.0</nodeVersion>
+                            <npmVersion>9.5.1</npmVersion>
                         </configuration>
                     </execution>
                     <execution>
