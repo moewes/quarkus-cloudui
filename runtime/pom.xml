@@ -12,7 +12,7 @@
         <groupId>net.moewes</groupId>
         <version>0.5.5-SNAPSHOT</version>
     </parent>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -71,7 +71,7 @@
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-webjars-locator</artifactId>
+            <artifactId>quarkus-web-dependency-locator</artifactId>
         </dependency>
         <dependency>
             <artifactId>cloudui-client</artifactId>
